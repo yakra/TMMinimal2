@@ -22,6 +22,4 @@ class HighwaySegment
 	unsigned char active_preview_concurrency_count;
 
 	HighwaySegment(Waypoint *, Waypoint *, Route *);
-
-	bool add_clinched_by(TravelerList *);
 };
