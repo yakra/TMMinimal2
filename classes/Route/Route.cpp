@@ -115,27 +115,3 @@ std::string Route::readable_name()
 {	/* return a string for a human-readable route name */
 	return rg_str + " " + route + banner + abbrev;
 }
-
-std::string Route::list_entry_name()
-{	/* return a string for a human-readable route name in the
-	format expected in traveler list files */
-	return route + banner + abbrev;
-}
-
-std::string Route::name_no_abbrev()
-{	/* return a string for a human-readable route name in the
-	format that might be encountered for intersecting route
-	labels, where the abbrev field is often omitted */
-	return route + banner;
-}
-
-void Route::store_traveled_segments(TravelerList* t, std::ofstream& log, unsigned int beg, unsigned int end)
-{	// store clinched segments with traveler and traveler with segments
-	for (unsigned int pos = beg; pos < end; pos++)
-	{	HighwaySegment *hs = segment_list[pos];
-		hs->add_clinched_by(t);
-		t->clinched_segments.insert(hs);
-	}
-	if (t->routes.insert(this).second && last_update && t->update && last_update[0] >= *t->update)
-		log << "Route updated " << last_update[0] << ": " << readable_name() << '\n';
-}

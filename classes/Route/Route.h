@@ -83,7 +83,4 @@ class Route
 	std::string str();
 	void read_wpt(unsigned int, ErrorList *, bool);
 	std::string readable_name();
-	std::string list_entry_name();
-	std::string name_no_abbrev();
-	void store_traveled_segments(TravelerList*, std::ofstream &, unsigned int, unsigned int);
 };
