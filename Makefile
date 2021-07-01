@@ -2,17 +2,13 @@ CXX = clang++
 STD = -std=c++11
 CXXFLAGS = -Wno-comment -Wno-dangling-else -Wno-logical-op-parentheses
 
-MTObjects = siteupdateMT.o functions/sql_fileMT.o threads/threads.o \
+MTObjects = siteupdateMT.o functions/sql_fileMT.o functions/threads.o \
   classes/GraphGeneration/HighwayGraphMT.o \
-  classes/WaypointQuadtree/WaypointQuadtreeMT.o \
-  functions/allbyregionactiveonlyMT.o \
-  functions/allbyregionactivepreviewMT.o
+  classes/WaypointQuadtree/WaypointQuadtreeMT.o
 
 STObjects = siteupdateST.o functions/sql_fileST.o \
   classes/GraphGeneration/HighwayGraphST.o \
-  classes/WaypointQuadtree/WaypointQuadtreeST.o \
-  functions/allbyregionactiveonlyST.o \
-  functions/allbyregionactivepreviewST.o
+  classes/WaypointQuadtree/WaypointQuadtreeST.o
 
 CommonObjects = \
   classes/Args/Args.o \

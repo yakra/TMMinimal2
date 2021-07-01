@@ -1,3 +1,9 @@
+#include "threads.h"
+#include "../classes/HighwaySystem/HighwaySystem.h"
+#include "../classes/Route/Route.h"
+#include "../classes/TravelerList/TravelerList.h"
+#include <iostream>
+
 #define debug
 void ReadWptThread
 (	unsigned int id, std::mutex* hs_mtx,
