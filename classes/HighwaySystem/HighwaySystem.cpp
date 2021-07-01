@@ -94,20 +94,3 @@ HighwaySystem::HighwaySystem(std::string &line, ErrorList &el, std::vector<std::
 bool HighwaySystem::active()
 {	return level == 'a';
 }
-
-/* Return whether this is an active or preview system */
-bool HighwaySystem::active_or_preview()
-{	return level == 'a' || level == 'p';
-}
-
-/* Return whether this is a development system */
-bool HighwaySystem::devel()
-{	return level == 'd';
-}
-
-/* Return index of a specified ConnectedRoute within con_route_list */
-size_t HighwaySystem::con_route_index(ConnectedRoute* cr)
-{	for (size_t i = 0; i < con_route_list.size(); i++)
-	  if (con_route_list[i] == cr) return i;
-	return -1; // error, ConnectedRoute not found
-}
