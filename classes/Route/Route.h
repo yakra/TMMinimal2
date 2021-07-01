@@ -82,7 +82,7 @@ class Route
 	Route(std::string &, HighwaySystem *, ErrorList &);
 
 	std::string str();
-	void read_wpt(unsigned int, WaypointQuadtree *, ErrorList *, bool);
+	void read_wpt(unsigned int, ErrorList *, bool);
 	void print_route();
 	HighwaySegment* find_segment_by_waypoints(Waypoint*, Waypoint*);
 	std::string chopped_rtes_line();

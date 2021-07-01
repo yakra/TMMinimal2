@@ -16,12 +16,11 @@
 #include "../HighwaySegment/HighwaySegment.h"
 #include "../HighwaySystem/HighwaySystem.h"
 #include "../Waypoint/Waypoint.h"
-#include "../WaypointQuadtree/WaypointQuadtree.h"
 #include <cstring>
 #include <fstream>
 #include <unordered_set>
 
-void Route::read_wpt(unsigned int threadnum, WaypointQuadtree *all_waypoints, ErrorList *el, bool usa_flag)
+void Route::read_wpt(unsigned int threadnum, ErrorList *el, bool usa_flag)
 {	/* read data into the Route's waypoint list from a .wpt file */
 	//cout << "read_wpt on " << str() << endl;
 	std::string filename = Args::highwaydatapath + "/hwy_data" + "/" + rg_str + "/" + system->systemname + "/" + root + ".wpt";
@@ -85,8 +84,7 @@ void Route::read_wpt(unsigned int threadnum, WaypointQuadtree *all_waypoints, Er
 			continue;
 		}
 		point_list.push_back(w);
-		all_waypoints->insert(threadnum, w, 1);
-		DEBUG(COND{LOCK; std::cout << "ReadWptThread " << threadnum << "     " << w->str() << " inserted" << std::endl; UNLOCK;})
+		DEBUG(COND{LOCK; std::cout << "ReadWptThread " << threadnum << "     " << w->str() << " point_list.push_back(w)" << std::endl; UNLOCK;})
 
 		// single-point Datachecks, and HighwaySegment
 		w->out_of_bounds(fstr);

@@ -5,10 +5,7 @@
 #include <iostream>
 
 #define debug
-void ReadWptThread
-(	unsigned int id, std::mutex* hs_mtx,
-	ErrorList* el,WaypointQuadtree* all_waypoints
-)
+void ReadWptThread(unsigned int id, std::mutex* hs_mtx, ErrorList* el)
 {	//printf("Starting ReadWptThread %02i\n", id); fflush(stdout);
 	while (HighwaySystem::it != HighwaySystem::syslist.end())
 	{	hs_mtx->lock();
@@ -36,7 +33,7 @@ void ReadWptThread
 		std::cout << h->systemname << std::flush;
 		bool usa_flag = h->country->first == "USA";
 		for (Route *r : h->route_list)
-			r->read_wpt(id, all_waypoints, el, usa_flag);
+			r->read_wpt(id, el, usa_flag);
 		std::cout << "!" << std::endl;
 	}
 }

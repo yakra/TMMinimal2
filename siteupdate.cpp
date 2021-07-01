@@ -28,7 +28,6 @@ This module defines classes to represent the contents of a
 #include "classes/Route/Route.h"
 #include "classes/TravelerList/TravelerList.h"
 #include "classes/Waypoint/Waypoint.h"
-#include "classes/WaypointQuadtree/WaypointQuadtree.h"
 #include "functions/crawl_hwy_data.h"
 #include "functions/split.h"
 #include "functions/upper.h"
@@ -200,10 +199,6 @@ int main(int argc, char *argv[])
 	crawl_hwy_data(Args::highwaydatapath+"/hwy_data", Route::all_wpt_files, splitsystems, Args::splitregion, 0);
 	cout << Route::all_wpt_files.size() << " files found." << endl;
 
-	// For finding colocated Waypoints and concurrent segments, we have
-	// quadtree of all Waypoints in existence to find them efficiently
-	WaypointQuadtree all_waypoints(-90,-180,90,180);
-
 	// Next, read all of the .wpt files for each HighwaySystem
 	cout << et.et() << "Reading waypoints for all routes." << endl;
       #ifdef threading_enabled
@@ -211,7 +206,7 @@ int main(int argc, char *argv[])
 	std::vector<std::thread> thr(Args::numthreads);
 	HighwaySystem::it = HighwaySystem::syslist.begin();
 	#define THREADLOOP for (unsigned int t = 0; t < thr.size(); t++)
-	THREADLOOP thr[t] = thread(ReadWptThread, t, &list_mtx, &el, &all_waypoints);
+	THREADLOOP thr[t] = thread(ReadWptThread, t, &list_mtx, &el);
 	THREADLOOP thr[t].join();
 	HighwaySystem::in_flight.clear();
       #else
