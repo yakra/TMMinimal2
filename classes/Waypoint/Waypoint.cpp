@@ -1,4 +1,3 @@
-//#define debug
 #include "Waypoint.h"
 #include "../Datacheck/Datacheck.h"
 #include "../DBFieldLength/DBFieldLength.h"
@@ -8,26 +7,7 @@
 #include <cmath>
 #include <cstring>
 
-#ifdef debug
-#include <iostream>
-#endif
-
 #define pi 3.141592653589793238
-
-bool sort_root_at_label(Waypoint *w1, Waypoint *w2)
-{
-      #ifdef debug
-	std::cout << "sort_root_at_label: " << w1 << ' ' << std::flush;
-	std::string w1ral = w1->root_at_label();
-	std::cout << w1ral << std::endl;
-	std::cout << "                    " << w2 << ' ' << std::flush;
-	std::string w2ral = w2->root_at_label();
-	std::cout << w2ral << std::endl;
-	return w1ral < w2ral;
-      #else
-	return w1->root_at_label() < w2->root_at_label();
-      #endif
-}
 
 Waypoint::Waypoint(char *line, Route *rte)
 {	/* initialize object from a .wpt file line */
@@ -104,29 +84,10 @@ std::string Waypoint::str()
 	return ans + ')';
 }
 
-std::string Waypoint::csv_line(unsigned int id)
-{	/* return csv line to insert into a table */
-	char fstr[64];
-	sprintf(fstr, "','%.15g','%.15g','", lat, lng);
-	return "'" + std::to_string(id) + "','" + label + fstr + route->root + "'";
-}
-
 bool Waypoint::same_coords(Waypoint *other)
 {	/* return if this waypoint is colocated with the other,
 	using exact lat,lng match */
 	return lat == other->lat && lng == other->lng;
-}
-
-bool Waypoint::nearby(Waypoint *other, double tolerance)
-{	/* return if this waypoint's coordinates are within the given
-	tolerance (in degrees) of the other */
-	return fabs(lat - other->lat) < tolerance && fabs(lng - other->lng) < tolerance;
-}
-
-unsigned int Waypoint::num_colocated()
-{	/* return the number of points colocated with this one (including itself) */
-	if (!colocated) return 1;
-	else return colocated->size();
 }
 
 double Waypoint::distance_to(Waypoint *other)
@@ -138,21 +99,6 @@ double Waypoint::distance_to(Waypoint *other)
 	double rlng1 = lng * (pi/180);
 	double rlat2 = other->lat * (pi/180);
 	double rlng2 = other->lng * (pi/180);
-
-	/* original formula
-	double ans = acos(cos(rlat1)*cos(rlng1)*cos(rlat2)*cos(rlng2) +\
-			  cos(rlat1)*sin(rlng1)*cos(rlat2)*sin(rlng2) +\
-			  sin(rlat1)*sin(rlat2)) * 3963.1; // EARTH_RADIUS */
-
-	/* spherical law of cosines formula (same as orig, with some terms factored out or removed via trig identity)
-	double ans = acos(cos(rlat1)*cos(rlat2)*cos(rlng2-rlng1)+sin(rlat1)*sin(rlat2)) * 3963.1; /* EARTH_RADIUS */
-
-	/* Vincenty formula
-	double ans = 
-	 atan (	sqrt(pow(cos(rlat2)*sin(rlng2-rlng1),2)+pow(cos(rlat1)*sin(rlat2)-sin(rlat1)*cos(rlat2)*cos(rlng2-rlng1),2))
-		/
-		(sin(rlat1)*sin(rlat2)+cos(rlat1)*cos(rlat2)*cos(rlng2-rlng1))
-	      ) * 3963.1; /* EARTH_RADIUS */
 
 	// haversine formula
 	double ans = asin(sqrt(pow(sin((rlat2-rlat1)/2),2) + cos(rlat1) * cos(rlat2) * pow(sin((rlng2-rlng1)/2),2))) * 7926.2; /* EARTH_DIAMETER */
@@ -190,125 +136,6 @@ double Waypoint::angle(Waypoint *pred, Waypoint *succ)
 		)
 	)
 	*180/pi;
-}
-
-std::string Waypoint::simple_waypoint_name()
-{	/* Failsafe name for a point, simply the string of route name @
-	label, concatenated with & characters for colocated points. */
-	if (!colocated) return route->list_entry_name() + "@" + label;
-	std::string long_label;
-	for (Waypoint *w : *colocated)
-	  if (w->route->system->active_or_preview())
-	  {	if (!long_label.empty()) long_label += "&";
-		long_label += w->route->list_entry_name() + "@" + w->label;
-	  }
-	return long_label;
-}
-
-bool Waypoint::is_or_colocated_with_active_or_preview()
-{	if (route->system->active_or_preview()) return 1;
-	if (colocated)
-	  for (Waypoint *w : *colocated)
-	    if (w->route->system->active_or_preview()) return 1;
-	return 0;
-}
-
-std::string Waypoint::root_at_label()
-{	return route->root + "@" + label;
-}
-
-void Waypoint::nmplogs(std::unordered_set<std::string> &nmpfps, std::ofstream &nmpnmp, std::list<std::string> &nmploglines)
-{	if (!near_miss_points.empty())
-	{	// sort the near miss points for consistent ordering to facilitate NMP FP marking
-		near_miss_points.sort(sort_root_at_label);
-		// construct string for nearmisspoints.log & FP matching
-		std::string nmpline = str() + " NMP";
-		for (Waypoint *other_w : near_miss_points) nmpline += " " + other_w->str();
-		// check for string in fp list
-		std::unordered_set<std::string>::iterator fpit = nmpfps.find(nmpline);
-		if (fpit == nmpfps.end())		  fpit = nmpfps.find(nmpline+" [LOOKS INTENTIONAL]");
-		if (fpit == nmpfps.end())		  fpit = nmpfps.find(nmpline+" [SOME LOOK INTENTIONAL]");
-		bool fp = fpit != nmpfps.end();
-		// write lines to tm-master.nmp
-		size_t li_count = 0;
-		for (Waypoint *other_w : near_miss_points)
-		{	bool li = (fabs(lat - other_w->lat) < 0.0000015) && (fabs(lng - other_w->lng) < 0.0000015);
-			if (li) li_count++;
-			// make sure we only plot once, since the NMP should be listed
-			// both ways (other_w in w's list, w in other_w's list)
-			if (sort_root_at_label(this, other_w))
-			{	char coordstr[51];
-
-				nmpnmp << root_at_label();
-				sprintf(coordstr, " %.15g", lat);
-				if (!strchr(coordstr, '.')) strcat(coordstr, ".0"); // add single trailing zero to ints for compatibility with Python
-				nmpnmp << coordstr;
-				sprintf(coordstr, " %.15g", lng);
-				if (!strchr(coordstr, '.')) strcat(coordstr, ".0"); // add single trailing zero to ints for compatibility with Python
-				nmpnmp << coordstr;
-				if (fp || li)
-				{	nmpnmp << ' ';
-					if (fp) nmpnmp << "FP";
-					if (li) nmpnmp << "LI";
-				}
-				nmpnmp << '\n';
-
-				nmpnmp << other_w->root_at_label();
-				sprintf(coordstr, " %.15g", other_w->lat);
-				if (!strchr(coordstr, '.')) strcat(coordstr, ".0"); // add single trailing zero to ints for compatibility with Python
-				nmpnmp << coordstr;
-				sprintf(coordstr, " %.15g", other_w->lng);
-				if (!strchr(coordstr, '.')) strcat(coordstr, ".0"); // add single trailing zero to ints for compatibility with Python
-				nmpnmp << coordstr;
-				if (fp || li)
-				{	nmpnmp << ' ';
-					if (fp) nmpnmp << "FP";
-					if (li) nmpnmp << "LI";
-				}
-				nmpnmp << '\n';
-			}
-		}
-		// indicate if this was in the FP list or if it's off by exact amt
-		// so looks like it's intentional, and detach near_miss_points list
-		// so it doesn't get a rewrite in nmp_merged WPT files
-		if (li_count)
-		{	if ( li_count == std::distance(near_miss_points.begin(), near_miss_points.end()) )
-				nmpline += " [LOOKS INTENTIONAL]";
-			else	nmpline += " [SOME LOOK INTENTIONAL]";
-			near_miss_points.clear();
-		}
-		if (fp)
-		{	nmpfps.erase(fpit);
-			nmpline += " [MARKED FP]";
-			near_miss_points.clear();
-		}
-		nmploglines.push_back(nmpline);
-	}
-}
-
-
-Waypoint* Waypoint::hashpoint()
-{	// return a canonical waypoint for graph vertex hashtable lookup
-	if (!colocated) return this;
-	return colocated->front();
-}
-
-bool Waypoint::label_references_route(Route *r)
-{	std::string no_abbrev = r->name_no_abbrev();
-	if ( strncmp(label.data(), no_abbrev.data(), no_abbrev.size()) )
-		return 0;
-	if (label[no_abbrev.size()] == 0 || label[no_abbrev.size()] == '_')
-		return 1;
-	if ( strncmp(label.data()+no_abbrev.size(), r->abbrev.data(), r->abbrev.size()) )
-	{	/*if (label[no_abbrev.size()] == '/')
-			Datacheck::add(route, label, "", "", "UNEXPECTED_DESIGNATION", label.data()+no_abbrev.size()+1);//*/
-		return 0;
-	}
-	if (label[no_abbrev.size() + r->abbrev.size()] == 0 || label[no_abbrev.size() + r->abbrev.size()] == '_')
-		return 1;
-	/*if (label[no_abbrev.size() + r->abbrev.size()] == '/')
-		Datacheck::add(route, label, "", "", "UNEXPECTED_DESIGNATION", label.data()+no_abbrev.size()+r->abbrev.size()+1);//*/
-	return 0;
 }
 
 /* Datacheck */

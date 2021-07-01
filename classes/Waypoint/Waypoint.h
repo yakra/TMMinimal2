@@ -1,11 +1,9 @@
 class HGVertex;
-class HighwayGraph;
 class Route;
 #include <deque>
 #include <forward_list>
 #include <fstream>
 #include <list>
-#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -36,19 +34,9 @@ class Waypoint
 	Waypoint(char *, Route *);
 
 	std::string str();
-	std::string csv_line(unsigned int);
 	bool same_coords(Waypoint *);
-	bool nearby(Waypoint *, double);
-	unsigned int num_colocated();
 	double distance_to(Waypoint *);
 	double angle(Waypoint *, Waypoint *);
-	std::string canonical_waypoint_name(HighwayGraph*);
-	std::string simple_waypoint_name();
-	bool is_or_colocated_with_active_or_preview();
-	std::string root_at_label();
-	void nmplogs(std::unordered_set<std::string> &, std::ofstream &, std::list<std::string> &);
-	Waypoint* hashpoint();
-	bool label_references_route(Route *);
 
 	// Datacheck
 	void distance_update(char *, double &, Waypoint *);
@@ -69,5 +57,3 @@ class Waypoint
 	void us_letter();
 	void visible_distance(char *, double &, Waypoint *&);
 };
-
-bool sort_root_at_label(Waypoint*, Waypoint*);
