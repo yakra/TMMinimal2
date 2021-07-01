@@ -3,7 +3,6 @@
 #include "../ErrorList/ErrorList.h"
 #include "../HighwaySystem/HighwaySystem.h"
 #include "../Route/Route.h"
-#include "../../functions/double_quotes.h"
 #include "../../functions/lower.h"
 #include "../../functions/split.h"
 
@@ -75,33 +74,9 @@ std::string ConnectedRoute::connected_rtes_line()
 	return line;
 }
 
-std::string ConnectedRoute::csv_line()
-{	/* return csv line to insert into a table */
-	char fstr[32];
-	sprintf(fstr, "','%.15g'", mileage);
-	return "'" + system->systemname + "','" + route + "','" + banner + "','" + double_quotes(groupname)
-		   + "','" + (roots.size() ? roots[0]->root.data() : "ERROR_NO_ROOTS") + fstr;
-}
-
 std::string ConnectedRoute::readable_name()
 {	/* return a string for a human-readable connected route name */
 	std::string ans = route + banner;
 	if (!groupname.empty()) ans += " (" +  groupname + ")";
 	return ans;
 }
-
-/*std::string ConnectedRoute::list_lines(int pos, int len, std::string newline, size_t indent)
-{	// return .list file lines marking (len) consecutive
-	// segments, starting at waypoint (pos) segments into route
-	//std::cout << "\nDEBUG: list_lines for " << readable_name() << " (" << roots.size() << " connected root(s))" << std::endl;
-	std::string lines;
-	for (Route *r : roots)
-	{	//std::cout << "DEBUG: [" << pos << " + " << len << " = " << pos+len << "] " << r->str() << std::endl;
-		std::string line = std::string(indent, ' ') + r->list_line(pos, pos+len);
-		if (line.size() > indent) lines += line + newline;
-		pos -= r->segment_list.size();
-	}
-	// strip final newline
-	while (lines.back() == '\n' || lines.back() == '\r') lines.pop_back();
-	return lines;
-}//*/

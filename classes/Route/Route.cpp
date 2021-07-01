@@ -9,7 +9,6 @@
 #include "../Region/Region.h"
 #include "../TravelerList/TravelerList.h"
 #include "../Waypoint/Waypoint.h"
-#include "../../functions/double_quotes.h"
 #include "../../functions/lower.h"
 #include "../../functions/split.h"
 #include "../../functions/upper.h"
@@ -140,20 +139,6 @@ std::string Route::chopped_rtes_line()
 	return line;
 }
 
-std::string Route::csv_line()
-{	/* return csv line to insert into a table */
-	// note: alt_route_names does not need to be in the db since
-	// list preprocessing uses alt or canonical and no longer cares
-	std::string line = "'" + system->systemname + "','" + region->code + "','" + route + "','" + banner
-			 + "','" + abbrev + "','" + double_quotes(city) + "','" + root + "','";
-	char mstr[51];
-	sprintf(mstr, "%.17g", mileage);
-	if (!strchr(mstr, '.')) strcat(mstr, ".0"); // add single trailing zero to ints for compatibility with Python
-	line += mstr;
-	line += "','" + std::to_string(rootOrder) + "'";
-	return line;
-}
-
 std::string Route::readable_name()
 {	/* return a string for a human-readable route name */
 	return rg_str + " " + route + banner + abbrev;
@@ -180,17 +165,6 @@ double Route::clinched_by_traveler(TravelerList *t)
 	}
 	return miles;
 }
-
-/*std::string Route::list_line(int beg, int end)
-{	/* Return a .list file line from (beg) to (end),
-	these being indices to the point_list vector.
-	These values can be "out-of-bounds" when getting lines
-	for connected routes. If so, truncate or return "". */
-/*	if (beg >= int(point_list.size()) || end <= 0) return "";
-	if (end >= int(point_list.size())) end = point_list.size()-1;
-	if (beg < 0) beg = 0;
-	return readable_name() + " " + point_list[beg]->label + " " + point_list[end]->label;
-}//*/
 
 void Route::write_nmp_merged()
 {	std::string filename = Args::nmpmergepath + '/' + rg_str;
