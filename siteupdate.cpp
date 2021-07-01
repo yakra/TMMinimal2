@@ -37,7 +37,6 @@ This module defines classes to represent the contents of a
 #include "classes/WaypointQuadtree/WaypointQuadtree.h"
 #include "functions/crawl_hwy_data.h"
 #include "functions/split.h"
-#include "functions/sql_file.h"
 #include "functions/upper.h"
 #include "templates/contains.cpp"
 #ifdef threading_enabled
