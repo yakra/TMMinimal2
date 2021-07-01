@@ -1,10 +1,6 @@
-class ElapsedTime;
-class ErrorList;
 class Route;
 #include <list>
 #include <mutex>
-#include <string>
-#include <unordered_set>
 
 class Datacheck
 {   /* This class encapsulates a datacheck log entry
@@ -57,8 +53,6 @@ class Datacheck
 
     */
 	static std::mutex mtx;
-	static std::list<std::string*> fps;
-	static std::unordered_set<std::string> always_error;
 	public:
 	Route *route;
 	std::string label1;
@@ -70,15 +64,6 @@ class Datacheck
 
 	static std::list<Datacheck> errors;
 	static void add(Route*, std::string, std::string, std::string, std::string, std::string);
-	static void read_fps(std::string&, ErrorList &);
-	static void mark_fps(std::string&, ElapsedTime &);
-	static void unmatchedfps_log(std::string&);
-	static void datacheck_log(std::string&);
 
 	Datacheck(Route*, std::string, std::string, std::string, std::string, std::string);
-
-	bool match_except_info(std::string*);
-	std::string str() const;
 };
-
-bool operator < (const Datacheck &, const Datacheck &);

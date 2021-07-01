@@ -62,21 +62,3 @@ ConnectedRoute::ConnectedRoute(std::string &line, HighwaySystem *sys, ErrorList 
 	}
 	if (roots.size() < 1) el.add_error("No valid roots in " + system->systemname + "_con.csv line: " + line);
 }
-
-std::string ConnectedRoute::connected_rtes_line()
-{	/* return a connected routes system csv line, for debug purposes */
-	std::string line = system->systemname + ';' + route + ';' + banner + ';' + groupname + ';';
-	if (!roots.empty())
-	{	line += roots[0]->root;
-		for (size_t i = 1; i < roots.size(); i++)
-			line += ',' + roots[i]->root;
-	}
-	return line;
-}
-
-std::string ConnectedRoute::readable_name()
-{	/* return a string for a human-readable connected route name */
-	std::string ans = route + banner;
-	if (!groupname.empty()) ans += " (" +  groupname + ")";
-	return ans;
-}
