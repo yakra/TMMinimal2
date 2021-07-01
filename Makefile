@@ -17,7 +17,6 @@ CommonObjects = \
   classes/ErrorList/ErrorList.o \
   classes/HighwaySegment/HighwaySegment.o \
   classes/HighwaySystem/HighwaySystem.o \
-  classes/HighwaySystem/route_integrity.o \
   classes/Region/Region.o \
   classes/Route/Route.o \
   classes/Route/read_wpt.o \
