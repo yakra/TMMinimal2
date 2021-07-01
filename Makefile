@@ -24,7 +24,6 @@ CommonObjects = \
   classes/TravelerList/TravelerList.o \
   classes/Waypoint/Waypoint.o \
   functions/crawl_hwy_data.o \
-  functions/format_clinched_mi.o \
   functions/lower.o \
   functions/split.o \
   functions/upper.o \
