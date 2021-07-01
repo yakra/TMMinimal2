@@ -3,11 +3,9 @@ STD = -std=c++11
 CXXFLAGS = -Wno-comment -Wno-dangling-else -Wno-logical-op-parentheses
 
 MTObjects = siteupdateMT.o functions/threads.o \
-  classes/GraphGeneration/HighwayGraphMT.o \
   classes/WaypointQuadtree/WaypointQuadtreeMT.o
 
 STObjects = siteupdateST.o \
-  classes/GraphGeneration/HighwayGraphST.o \
   classes/WaypointQuadtree/WaypointQuadtreeST.o
 
 CommonObjects = \
@@ -18,10 +16,6 @@ CommonObjects = \
   classes/DBFieldLength/DBFieldLength.o \
   classes/ElapsedTime/ElapsedTime.o \
   classes/ErrorList/ErrorList.o \
-  classes/GraphGeneration/GraphListEntry.o \
-  classes/GraphGeneration/HGEdge.o \
-  classes/GraphGeneration/HGVertex.o \
-  classes/GraphGeneration/PlaceRadius.o \
   classes/HighwaySegment/HighwaySegment.o \
   classes/HighwaySystem/HighwaySystem.o \
   classes/HighwaySystem/route_integrity.o \
@@ -31,7 +25,6 @@ CommonObjects = \
   classes/TravelerList/TravelerList.o \
   classes/TravelerList/userlog.o \
   classes/Waypoint/Waypoint.o \
-  classes/Waypoint/canonical_waypoint_name/canonical_waypoint_name.o \
   functions/crawl_hwy_data.o \
   functions/double_quotes.o \
   functions/format_clinched_mi.o \
