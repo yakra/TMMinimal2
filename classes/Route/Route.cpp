@@ -1,19 +1,15 @@
 #include "Route.h"
-#include "../Args/Args.h"
-#include "../ConnectedRoute/ConnectedRoute.h"
-#include "../Datacheck/Datacheck.h"
 #include "../DBFieldLength/DBFieldLength.h"
 #include "../ErrorList/ErrorList.h"
 #include "../HighwaySegment/HighwaySegment.h"
 #include "../HighwaySystem/HighwaySystem.h"
 #include "../Region/Region.h"
 #include "../TravelerList/TravelerList.h"
-#include "../Waypoint/Waypoint.h"
 #include "../../functions/lower.h"
 #include "../../functions/split.h"
 #include "../../functions/upper.h"
 #include <cstring>
-#include <sys/stat.h>
+#include <fstream>
 
 std::unordered_map<std::string, Route*> Route::root_hash, Route::pri_list_hash, Route::alt_list_hash;
 std::unordered_set<std::string> Route::all_wpt_files;
@@ -115,30 +111,6 @@ std::string Route::str()
 	return root + " (" + std::to_string(point_list.size()) + " total points)";
 }
 
-void Route::print_route()
-{	for (Waypoint *point : point_list)
-		std::cout << point->str() << std::endl;
-}
-
-HighwaySegment* Route::find_segment_by_waypoints(Waypoint *w1, Waypoint *w2)
-{	for (HighwaySegment *s : segment_list)
-	  if (s->waypoint1 == w1 && s->waypoint2 == w2 || s->waypoint1 == w2 && s->waypoint2 == w1)
-	    return s;
-	return 0;
-}
-
-std::string Route::chopped_rtes_line()
-{	/* return a chopped routes system csv line, for debug purposes */
-	std::string line = system->systemname + ';' + region->code + ';' + route + ';' \
-			 + banner + ';' + abbrev + ';' + city + ';' + root + ';';
-	if (!alt_route_names.empty())
-	{	line += alt_route_names[0];
-		for (size_t i = 1; i < alt_route_names.size(); i++)
-			line += ',' + alt_route_names[i];
-	}
-	return line;
-}
-
 std::string Route::readable_name()
 {	/* return a string for a human-readable route name */
 	return rg_str + " " + route + banner + abbrev;
@@ -157,53 +129,6 @@ std::string Route::name_no_abbrev()
 	return route + banner;
 }
 
-double Route::clinched_by_traveler(TravelerList *t)
-{	double miles = 0;
-	for (HighwaySegment *s : segment_list)
-	{	std::unordered_set<TravelerList*>::iterator t_found = s->clinched_by.find(t);
-		if (t_found != s->clinched_by.end()) miles += s->length;
-	}
-	return miles;
-}
-
-void Route::write_nmp_merged()
-{	std::string filename = Args::nmpmergepath + '/' + rg_str;
-	mkdir(filename.data(), 0777);
-	filename += "/" + system->systemname;
-	mkdir(filename.data(), 0777);
-	filename += "/" + root + ".wpt";
-	std::ofstream wptfile(filename);
-	char fstr[12];
-	for (Waypoint *w : point_list)
-	{	wptfile << w->label << ' ';
-		for (std::string &a : w->alt_labels) wptfile << a << ' ';
-		if (w->near_miss_points.empty())
-		     {	wptfile << "http://www.openstreetmap.org/?lat=";
-			sprintf(fstr, "%.6f", w->lat);
-			wptfile << fstr << "&lon=";
-			sprintf(fstr, "%.6f", w->lng);
-			wptfile << fstr << '\n';
-		     }
-		else {	// for now, arbitrarily choose the northernmost
-			// latitude and easternmost longitude values in the
-			// list and denote a "merged" point with the https
-			double lat = w->lat;
-			double lng = w->lng;
-			for (Waypoint *other_w : w->near_miss_points)
-			{	if (other_w->lat > lat)	lat = other_w->lat;
-				if (other_w->lng > lng)	lng = other_w->lng;
-			}
-			wptfile << "https://www.openstreetmap.org/?lat=";
-			sprintf(fstr, "%.6f", lat);
-			wptfile << fstr << "&lon=";
-			sprintf(fstr, "%.6f", lng);
-			wptfile << fstr << '\n';
-			w->near_miss_points.clear();
-		     }
-	}
-	wptfile.close();
-}
-
 void Route::store_traveled_segments(TravelerList* t, std::ofstream& log, unsigned int beg, unsigned int end)
 {	// store clinched segments with traveler and traveler with segments
 	for (unsigned int pos = beg; pos < end; pos++)
@@ -213,34 +138,4 @@ void Route::store_traveled_segments(TravelerList* t, std::ofstream& log, unsigne
 	}
 	if (t->routes.insert(this).second && last_update && t->update && last_update[0] >= *t->update)
 		log << "Route updated " << last_update[0] << ": " << readable_name() << '\n';
-}
-
-Waypoint* Route::con_beg()
-{	return is_reversed ? point_list.back() : point_list.front();
-}
-
-Waypoint* Route::con_end()
-{	return is_reversed ? point_list.front() : point_list.back();
-}
-
-// datacheck
-void Route::con_mismatch()
-{	if (route != con_route->route)
-		Datacheck::add(this, "", "", "", "CON_ROUTE_MISMATCH",
-			       route+" <-> "+con_route->route);
-	if (banner != con_route->banner)
-	  if (abbrev.size() && abbrev == con_route->banner)
-		Datacheck::add(this, "", "", "", "ABBREV_AS_CON_BANNER", system->systemname + "_con.csv#L" +
-			       std::to_string(system->con_route_index(con_route)+2));
-	  else	Datacheck::add(this, "", "", "", "CON_BANNER_MISMATCH",
-			       (banner.size() ? banner : "(blank)") + " <-> " +
-			       (con_route->banner.size() ? con_route->banner : "(blank)"));
-}
-
-// sort routes by most recent update for use at end of user logs
-// all should have a valid updates entry pointer before being passed here
-bool sort_route_updates_oldest(const Route *r1, const Route *r2)
-{	int p = strcmp(r1->last_update[0].data(), r2->last_update[0].data());
-	if (!p) return r1->last_update[3] < r2->last_update[3];
-		return p < 0;
 }

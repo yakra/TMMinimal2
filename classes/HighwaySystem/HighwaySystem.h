@@ -49,14 +49,7 @@ class HighwaySystem
 	HighwaySystem(std::string &, ErrorList &, std::vector<std::pair<std::string,std::string>> &);
 
 	bool active();			// Return whether this is an active system
-	bool preview();			// Return whether this is a preview system
 	bool active_or_preview();	// Return whether this is an active or preview system
 	bool devel();			// Return whether this is a development system
-	double total_mileage();		// Return total system mileage across all regions
-	std::string level_name();	// Return full "active" / "preview" / "devel" string"
-	size_t route_index(Route*);	// Return index of a specified Route* within route_list
 	size_t con_route_index(ConnectedRoute*); // same thing for ConnectedRoutes
-	void route_integrity(ErrorList& el);
-	void insert_vertex(HGVertex*);
-	void stats_csv();
 };

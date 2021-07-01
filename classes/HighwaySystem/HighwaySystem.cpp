@@ -5,7 +5,6 @@
 #include "../ErrorList/ErrorList.h"
 #include "../Region/Region.h"
 #include "../Route/Route.h"
-#include "../TravelerList/TravelerList.h"
 #include "../../functions/split.h"
 #include <cstring>
 #include <fstream>
@@ -96,11 +95,6 @@ bool HighwaySystem::active()
 {	return level == 'a';
 }
 
-/* Return whether this is a preview system */
-inline bool HighwaySystem::preview()
-{	return level == 'p';
-}
-
 /* Return whether this is an active or preview system */
 bool HighwaySystem::active_or_preview()
 {	return level == 'a' || level == 'p';
@@ -111,77 +105,9 @@ bool HighwaySystem::devel()
 {	return level == 'd';
 }
 
-/* Return total system mileage across all regions */
-double HighwaySystem::total_mileage()
-{	double mi = 0;
-	for (std::pair<Region* const, double>& rm : mileage_by_region) mi += rm.second;
-	return mi;
-}
-
-/* return full "active" / "preview" / "devel" string" */
-std::string HighwaySystem::level_name()
-{	switch(level)
-	{	case 'a': return "active";
-		case 'p': return "preview";
-		case 'd': return "devel";
-		default:  return "ERROR";
-	}
-}
-
-/* Return index of a specified Route within route_list */
-size_t HighwaySystem::route_index(Route* r)
-{	for (size_t i = 0; i < route_list.size(); i++)
-	  if (route_list[i] == r) return i;
-	return -1; // error, Route not found
-}
-
 /* Return index of a specified ConnectedRoute within con_route_list */
 size_t HighwaySystem::con_route_index(ConnectedRoute* cr)
 {	for (size_t i = 0; i < con_route_list.size(); i++)
 	  if (con_route_list[i] == cr) return i;
 	return -1; // error, ConnectedRoute not found
-}
-
-void HighwaySystem::insert_vertex(HGVertex* v)
-{	lniu_mtx.lock();	// re-use an existing mutex...
-	vertices.insert(v);
-	lniu_mtx.unlock();	// ...rather than make a new one
-}
-
-void HighwaySystem::stats_csv()
-{	std::ofstream sysfile(Args::csvstatfilepath + "/" + systemname + "-all.csv");
-	sysfile << "Traveler,Total";
-	std::list<Region*> regions;
-	double total_mi = 0;
-	char fstr[112];
-	for (std::pair<Region* const, double>& rm : mileage_by_region)
-	{	regions.push_back(rm.first);
-		total_mi += rm.second;
-	}
-	regions.sort(sort_regions_by_code);
-	for (Region *region : regions)
-		sysfile << ',' << region->code;
-	sysfile << '\n';
-	for (TravelerList *t : TravelerList::allusers)
-	  // only include entries for travelers who have any mileage in system
-	  if (t->system_region_mileages.find(this) != t->system_region_mileages.end())
-	  {	sprintf(fstr, ",%.2f", t->system_region_miles(this));
-		sysfile << t->traveler_name << fstr;
-		for (Region *region : regions)
-		  try {	sprintf(fstr, ",%.2f", t->system_region_mileages.at(this).at(region));
-			sysfile << fstr;
-		      }
-		  catch (const std::out_of_range& oor)
-		      {	sysfile << ",0";
-		      }
-		sysfile << '\n';
-	  }
-	sprintf(fstr, "TOTAL,%.2f", total_mileage());
-	sysfile << fstr;
-	for (Region *region : regions)
-	{	sprintf(fstr, ",%.2f", mileage_by_region.at(region));
-		sysfile << fstr;
-	}
-	sysfile << '\n';
-	sysfile.close();
 }
