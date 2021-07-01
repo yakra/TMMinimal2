@@ -97,5 +97,3 @@ std::string HighwaySegment::clinchedby_code(std::list<TravelerList*> *traveler_l
 	//std::cout << "nibbles >9 -> letters" << std::endl;
 	return code;
 }
-
-#include "compute_stats_t.cpp"

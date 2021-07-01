@@ -94,7 +94,6 @@ class Route
 	//std::string list_line(int, int);
 	void write_nmp_merged();
 	void store_traveled_segments(TravelerList*, std::ofstream &, unsigned int, unsigned int);
-	void compute_stats_r();
 	void con_mismatch();
 	Waypoint* con_beg();
 	Waypoint* con_end();
