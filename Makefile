@@ -23,7 +23,6 @@ CommonObjects = \
   classes/Route/Route.o \
   classes/Route/read_wpt.o \
   classes/TravelerList/TravelerList.o \
-  classes/TravelerList/userlog.o \
   classes/Waypoint/Waypoint.o \
   functions/crawl_hwy_data.o \
   functions/double_quotes.o \
