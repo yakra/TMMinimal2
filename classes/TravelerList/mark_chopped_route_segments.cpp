@@ -122,11 +122,6 @@ else {	r->system->lniu_mtx.lock();
 	// new .list lines for region split-ups
 	if (Args::splitregion == r->region->code)
 	{
-		#define r1 r
-		#define r2 r
-		#include "splitregion.cpp"
-		#undef r1
-		#undef r2
 	}
 	else	splist << orig_line << endlines[l];
      }

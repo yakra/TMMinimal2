@@ -23,11 +23,5 @@ class HighwaySegment
 
 	HighwaySegment(Waypoint *, Waypoint *, Route *);
 
-	std::string str();
 	bool add_clinched_by(TravelerList *);
-	std::string csv_line(unsigned int);
-	std::string segment_name();
-	unsigned int index();
-	//std::string concurrent_travelers_sanity_check();
-	std::string clinchedby_code(std::list<TravelerList*> *, unsigned int);
 };
